@@ -2,39 +2,44 @@
 
 import { useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useScroll } from "@react-three/drei";
 import * as THREE from "three";
 
 export default function InteractiveShape() {
   const meshRef = useRef<THREE.Mesh>(null!);
+  const scroll = useScroll(); 
+  
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * 0.2;
-      meshRef.current.rotation.y += delta * 0.3;
+      // Mechanical, deliberate base rotation
+      meshRef.current.rotation.x += delta * 0.1;
+      meshRef.current.rotation.y += delta * 0.15;
       
-      if (hovered) {
-        meshRef.current.rotation.x += delta * 2;
-        meshRef.current.rotation.y += delta * 2;
-      }
+      const scrollOffset = scroll.offset;
+      // Drastic movement: drops down and spins wildly on scroll
+      meshRef.current.position.y = -scrollOffset * 12; 
+      meshRef.current.rotation.z = scrollOffset * Math.PI * 4; 
     }
   });
 
   return (
     <mesh
       ref={meshRef}
-      scale={active ? 1.5 : 1}
+      scale={active ? 1.8 : 1.2}
       onClick={() => setActive(!active)}
       onPointerOver={() => setHover(true)}
       onPointerOut={() => setHover(false)}
     >
-      <torusKnotGeometry args={[2, 0.6, 128, 32]} />
+      {/* Upgraded from Torus to a futuristic Data Node */}
+      <icosahedronGeometry args={[2, 0]} />
       <meshStandardMaterial 
-        color={hovered ? "#00ffcc" : "#6366f1"} 
-        wireframe={active} 
-        roughness={0.2}
-        metalness={0.8}
+        color={hovered ? "#00ffcc" : "#2563eb"} 
+        wireframe={!active} // Defaults to a techy wireframe, becomes solid on click
+        roughness={0.1}
+        metalness={0.9}
       />
     </mesh>
   );
